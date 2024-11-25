@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              ' bağlantı çalışmıyor',
+              ' badenin bilgisayarı çalışıyor',
             ),
             Text(
               '$_counter',
