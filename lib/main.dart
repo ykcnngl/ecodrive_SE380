@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,9 +34,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  void _incrementCounter() {
-    setState(() {});
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -44,20 +43,18 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.orange,
         title: Text(widget.title),
         leading: Icon(Icons.menu),
-        actions: [
-          IconButton(
-              icon: Icon(Icons.person),
-              onPressed: () {
-
-              }
-          )
-        ],
+        actions: [IconButton(icon: Icon(Icons.person), onPressed: () {})],
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(onPressed:, child: "Current location")
+          ],
         ),
       ),
+
+
       bottomNavigationBar: BottomNavigationBar(
           backgroundColor: Colors.orange, // Arka plan rengi
           items: [
