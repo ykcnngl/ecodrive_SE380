@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const HomeScreen(),
     );
-
+// Temporary Home screen created
   }
 }
 
