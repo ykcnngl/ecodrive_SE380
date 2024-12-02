@@ -47,4 +47,4 @@ class MapScreenState extends State<MapScreen> {
     await controller.animateCamera(CameraUpdate.newCameraPosition(_kIUE));
   }
 }
-// Map Screen: People can use their self-location for go to the school.
+// Map Screen: People can use their self-location for go to the school

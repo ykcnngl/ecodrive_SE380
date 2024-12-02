@@ -31,4 +31,4 @@ class _MarkersScreenState extends State<MarkersScreen> {
   }
 }
 
-// people can see other people's location
+// people can see other people's location.
