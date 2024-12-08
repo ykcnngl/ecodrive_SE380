@@ -1,13 +1,12 @@
-
-import 'package:ecodrive/Homepage/appointment.dart';
+import 'package:ecodrive/Homepage/Appointment.dart';
 import 'package:flutter/material.dart';
 import 'help.dart';
-import 'messages.dart';
+import 'Messages.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key});
 
-  final String title;
+
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -18,7 +17,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.orange,
-        title: Text(widget.title),
+        title: Text("ECODRIVE"),
         actions: [IconButton(icon: const Icon(Icons.person), onPressed: () {})],
       ),
       drawer: Drawer(

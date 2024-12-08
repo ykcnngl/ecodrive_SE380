@@ -27,7 +27,7 @@ class Welcomepage extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context)
                           .push(MaterialPageRoute(builder: (context) {
-                        return const Login();
+                        return  Login();
                       }));
                     },
                     style: OutlinedButton.styleFrom(
@@ -49,7 +49,8 @@ class Welcomepage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 32.0,horizontal: 32.0),
                       side: const BorderSide(color: Colors.deepOrange,width: 1.5),
                     ),
-                    child: const Text("Sign Up",style: TextStyle(fontSize: 22))),
+                    child: const Text("Sign Up",
+                        style: TextStyle(fontSize: 22))),
               ]),
             ])));
   }
