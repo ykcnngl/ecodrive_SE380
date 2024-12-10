@@ -23,12 +23,42 @@ class _MarkersScreenState extends State<MarkersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Markers Sample")),
+      appBar: AppBar(
+        title: const Text("Markers Sample"),
+        backgroundColor: Colors.orange,
+      ),
       body: GoogleMap(initialCameraPosition: _kIue,
-      markers: {iueMarker},  // set olduğu için parametresi set ekledik.
+        markers: {iueMarker},  // set olduğu için parametresi set ekledik.
       ),
     );
   }
 }
 
 // people can see other people's location.
+
+
+
+//void _showDirectionDialog(){
+//   showDialog(
+//     context: context,
+//     builder: (context) => AlertDialog(
+//       title: const Text('İzmir Ekonomi Üniversitesi'),
+//       content: const Text('Do you want to go to this location?'),
+//       actions: [
+//         TextButton(
+//           onPressed: () {
+//             Navigator.pop(context);
+//           },
+//           child: const Text('Send Message'),
+//         ),
+//         TextButton(
+//           onPressed: () {
+//             Navigator.pop(context);
+//           },
+//           child: const Text('Get Direction'),
+//         ),
+//       ],
+//     ),
+//   );
+// }
+//

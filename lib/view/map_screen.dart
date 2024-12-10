@@ -10,11 +10,14 @@ class MapScreen extends StatefulWidget {
 }
 
 class MapScreenState extends State<MapScreen> {
+
+
+
   final Completer<GoogleMapController> _controller =
   Completer<GoogleMapController>();
 
   static const CameraPosition _kDefaultLocation = CameraPosition(
-    target: LatLng(38.38793312431735, 27.044607696153015),
+    target: LatLng(38.38793312431735, 27.044607696153015),      //IEU LOCATION
     zoom: 14.4746,
   );
 
@@ -47,4 +50,8 @@ class MapScreenState extends State<MapScreen> {
     await controller.animateCamera(CameraUpdate.newCameraPosition(_kIUE));
   }
 }
+
+
+
+
 // Map Screen: People can use their self-location for go to the school

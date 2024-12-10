@@ -1,4 +1,6 @@
+import 'package:ecodrive/view/google_map.dart';
 import 'package:flutter/material.dart';
+import 'direction_screen.dart';
 import 'google_maps_markers.dart';
 import 'map_screen.dart';
 
@@ -17,7 +19,8 @@ class HomeScreen extends StatelessWidget {
           children: [
             buildButton(context, "Map Screen", const MapScreen()),
             buildButton(context, "Markers Screen", const MarkersScreen()),
-            //buildButton(context, "Direction Screen", const DirectionScreen()),
+            buildButton(context, "Direction Screen", const DirectionScreen()),
+            buildButton(context, " Screen", const GoogleMapFlutter()),
           ],
         ),
       ),

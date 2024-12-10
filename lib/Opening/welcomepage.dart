@@ -42,7 +42,7 @@ class Welcomepage extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context)
                           .push(MaterialPageRoute(builder: (context) {
-                        return const Signup();
+                        return  Signup();
                       }));
                     },
                     style: OutlinedButton.styleFrom(

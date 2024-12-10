@@ -1,22 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecodrive/Homepage/myhomepage.dart';
-
-import 'package:ecodrive/Opening/Myloginbutton.dart';
+import 'package:ecodrive/Opening/myloginbutton.dart';
 import 'package:ecodrive/Opening/signup.dart';
-
 import 'package:flutter/material.dart';
-
 import 'mytextfield.dart';
+
+
 
 class Login extends StatelessWidget {
   final EkoIdController = TextEditingController();
   final passwordController = TextEditingController();
+
 
   Login({super.key});
 
   void LoginUser(BuildContext context) async {
     final ekoid = EkoIdController.text.trim();
     final password = passwordController.text.trim();
+
 
     if (ekoid.isEmpty || password.isEmpty) {
       showDialog(
@@ -36,14 +37,15 @@ class Login extends StatelessWidget {
       );
       return;
     }
-    print('EkoID: $ekoid');
-    print('Password: $password');
+
     try {
-      final userDoc =
-          await FirebaseFirestore.instance.collection('users').doc("7NkW4kOlANKcF9wu1sfx").get();
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(ekoid)
+          .get();
       if (userDoc.exists && userDoc['password'] == password) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const MyHomePage()));
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const MyHomePage()));
       } else {
         showDialog(
           context: context,
@@ -63,7 +65,7 @@ class Login extends StatelessWidget {
       }
     } catch (e) {
       showDialog(
-        context:context,
+        context: context,
         builder: (context) => AlertDialog(
           title: const Text("ERROR"),
           content: const Text("Incorrect EkoID or password."),
@@ -137,11 +139,11 @@ class Login extends StatelessWidget {
                 onPressed: () {
                   Navigator.of(context)
                       .push(MaterialPageRoute(builder: (context) {
-                    return const Signup();
+                    return  Signup();
                   }));
                 },
-                child:
-                    const Text("Register now", style: TextStyle(color: Colors.blue)),
+                child: const Text("Register now",
+                    style: TextStyle(color: Colors.blue)),
               )
             ],
           ),
