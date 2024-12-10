@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "251557373639",
+    "project_id": "ecodrivenew",
+    "storage_bucket": "ecodrivenew.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251557373639:android:748ae09754a2f5d9df80e2",
+        "android_client_info": {
+          "package_name": "com.example.ecodrive"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_VQ_XbCFuBjg-01UpQuC1GkEbQZ7uNQM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
