@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Messages extends StatelessWidget {
-  const Messages({
+  Messages({
     Key? key,
   }) : super(key: key);
 
@@ -13,7 +13,11 @@ class Messages extends StatelessWidget {
       body: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         SizedBox(height: 700),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            /*Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              //return ();
+            }));*/
+          },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
           child: Text(
             "Create a New Message",

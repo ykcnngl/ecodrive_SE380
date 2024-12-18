@@ -3,6 +3,7 @@ import 'package:ecodrive/Homepage/myhomepage.dart';
 import 'package:ecodrive/Opening/myloginbutton.dart';
 import 'package:flutter/material.dart';
 import 'mytextfield.dart';
+import 'package:ecodrive/globals.dart' as globals;
 
 class Signup extends StatelessWidget {
   final EkoIdController = TextEditingController();
@@ -74,28 +75,31 @@ class Signup extends StatelessWidget {
         if(userDoc['name'] == name && userDoc['surname'] == surname && userDoc['birthday']==birthday) {
           await FirebaseFirestore.instance.collection('users').doc(ekoid).update({'password':password,
           });
-        Navigator.pushReplacement(context,
+
+          globals.currentEkoId = ekoid;
+
+          Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) => const MyHomePage()),
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) =>
-              AlertDialog(
-                title: const Text("ERROR"),
-                content: const Text("Please fill in your information in the same way as on your school card. "),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Okay"),
-                  ),
-                ],
-              ),
-        );
+          );
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) =>
+                AlertDialog(
+                  title: const Text("ERROR"),
+                  content: const Text("Please fill in your information in the same way as on your school card. "),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Okay"),
+                    ),
+                  ],
+                ),
+          );
+        }
       }
-    }
     } catch (e) {
       showDialog(
         context: context,
@@ -204,4 +208,3 @@ class Signup extends StatelessWidget {
     );
   }
 }
-
