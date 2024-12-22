@@ -1,0 +1,5 @@
+library globals;
+
+String currentEkoId = "";
+
+//
