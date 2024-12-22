@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 class Appointment extends StatelessWidget {
   const Appointment({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Your Appointments"),
+        title: const Text("Your Appointments"),
 
       ),
     );
