@@ -51,7 +51,7 @@ class _DirectionScreenState extends State<DirectionScreen> {
               try {
                 await _driverMarkerColorChanging(
                     isDriver:
-                        true); //BURDA ASENKRON YAPINCA SORUN OLUYOR UYGULAMA BAZEN HATA VERİYOR
+                        true); //Navigator dışarı taşınarak çözüldü
               } catch (e) {
                 print('Error in setting driver marker: $e');
               }
