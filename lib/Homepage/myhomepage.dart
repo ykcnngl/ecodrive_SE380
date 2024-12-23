@@ -18,9 +18,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String dropdownValue = 'One';
+
   var username;
 
+  @override
   void initState() {
     super.initState();
     fetchUserData(); // Firestore verisini çekmek için çağırılır
@@ -31,9 +32,20 @@ class _MyHomePageState extends State<MyHomePage> {
     final userDoc =
         await FirebaseFirestore.instance.collection('users').doc(ekoid).get();
     setState(() {
-      username = userDoc['name'] ?? "User"; // Eğer "name" alanı varsa göster
+      username = userDoc['name'] ?? "User"; //  "name" alanını  göster
     });
   }
+
+  void signout() {
+    FirebaseAuth.instance.signOut();
+    if(context.mounted){
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) {
+          return const Welcomepage();
+        }));
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -42,54 +54,19 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.orange,
         title: const Text("ECODRIVE"),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: DropdownButton<String>(
-              value: dropdownValue,
-              icon: const Icon(Icons.person),
-              underline: const SizedBox(),
-              // Alt çizgiyi kaldırır
-              onChanged: (String? newValue) {
-                setState(() {
-                  dropdownValue = newValue!;
-                });
-                if (newValue == 'Two') {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const Profile(),
-                    ),
-                  );
-                } else if (newValue == 'Three') {
-                  FirebaseAuth.instance.signOut();
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const Welcomepage()));
-                }
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const Profile();
+                    },
+                  ),
+                );
               },
-              items: const [
-                DropdownMenuItem<String>(
-                  value: 'One',
-                  child: Text(''),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Two',
-                  child: Text(
-                    'PROFILE',
-                    style: TextStyle(fontSize: 25),
-                  ),
-                ),
-                DropdownMenuItem<String>(
-                  value: 'Three',
-                  child: Text(
-                    'LOG OUT',
-                    style: TextStyle(fontSize: 25),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              icon: const Icon(Icons.person)),
         ],
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         //Köşelerden 24 birim boşluk bırakmak için
@@ -97,8 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              "Hoşgeldin, $username !",
-              style: TextStyle(
+              "WELCOME, $username !",
+              style: const TextStyle(
                 fontSize: 40,
                 fontStyle: FontStyle.italic,
                 color: Colors.orangeAccent,
@@ -126,28 +103,32 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-
       drawer: Drawer(
-        child: ListView(children: [
-          const SizedBox(height: 40),
-          ListTile(
-              title: const Text("BECOME A DRIVER"),
-              onTap: () {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) {
-                  return const Driverlicence();
-                }));
-              }),
-          ListTile(
-              title: const Text("HELP & CONTACT"),
-              onTap: () {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) {
-                  return const Help();
-                }));
-              }),
-          ListTile(title: const Text("LOG OUT"), onTap: () {})
-        ]),
+        child: ListView(
+          children: [
+            const SizedBox(height: 40),
+            ListTile(
+                title: const Text("BECOME A DRIVER"),
+                onTap: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
+                    return const Driverlicence();
+                  }));
+                }),
+            ListTile(
+                title: const Text("HELP & CONTACT"),
+                onTap: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
+                    return const Help();
+                  }));
+                }),
+            ListTile(
+              title: const Text("LOG OUT"),
+              onTap: signout,
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.orange,
@@ -182,7 +163,8 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           }
         },
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
+//updated version
