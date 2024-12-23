@@ -17,6 +17,7 @@ class _DirectionScreenState extends State<DirectionScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   Set<Marker> markers = {};
   late GoogleMapController mapController;
+  bool isDriver = true; // başlangıçta driver olarak seçili olacak ve istediğimizde değişmek için kaydırmalı buton koyacağız
 
   static const CameraPosition _kInitialPosition = CameraPosition(
     target: LatLng(38.397471597337535, 27.070379359995695),
@@ -27,72 +28,79 @@ class _DirectionScreenState extends State<DirectionScreen> {
   void initState() {
     super.initState();
 
-    _driverQuestion();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {       // bunu ana ekrana koymaya çalışıcaz
+    //   _driverQuestion();
+    // });
     _addSampleMarkers(); //Add sample marker
     _listenToFirestoreLocations();
   }
 
-  void _driverQuestion() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {    // Bunun sayesinde widgetler ağacı kurulacak ve hemen sonra bu pencerenin açılması sağlanacak
-      showDialog(
-        context: context,
-        barrierDismissible: false,// Eğer kullanıcı seçim yapmazsa ilerleyemeyecek
+  Future<void> _driverQuestion() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      // Eğer kullanıcı seçim yapmazsa ilerleyemeyecek
 
-        builder: (context) => AlertDialog(
-          title: const Text('Are you a driver?'),
-          content: const Text('Please select your role.'),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                await _driverMarkerColorChanging( isDriver : true );           //BURDA ASENKRON YAPINCA SORUN OLUYOR UYGULAMA BAZEN HATA VERİYOR
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text('Yes'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Hiçbir değişiklik yapmadık böylece kırmızı olarak kalacak marker
-              },
-              child: const Text('No'),
-            ),
-          ],
-        ),
-      );
-    });
+      builder: (context) => AlertDialog(
+        title: const Text('Are you a driver?'),
+        content: const Text('Please select your role.'),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                await _driverMarkerColorChanging(
+                    isDriver:
+                        true); //BURDA ASENKRON YAPINCA SORUN OLUYOR UYGULAMA BAZEN HATA VERİYOR
+              } catch (e) {
+                print('Error in setting driver marker: $e');
+              }
+            },
+            child: const Text('Yes'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(
+                  context); // Hiçbir değişiklik yapmadık böylece kırmızı olarak kalacak marker
+            },
+            child: const Text('No'),
+          ),
+        ],
+      ),
+    );
   }
-
-
-
 
   Future<void> _driverMarkerColorChanging({bool isDriver = true}) async {
+    try {
+      Position position = await currentPosition();
+      LatLng currentLocation = LatLng(position.latitude, position.longitude);
 
-    Position position = await currentPosition();
-    LatLng currentLocation = LatLng(position.latitude, position.longitude);
+      await _saveLocationToFireStore(currentLocation);
 
-    await _saveLocationToFireStore(currentLocation);
-
-    setState(() {
-      markers.add(
-        Marker(markerId: const MarkerId('currentLocation'),
-          position: currentLocation,
-          icon: isDriver? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue) : BitmapDescriptor.defaultMarker,
-
-          infoWindow: InfoWindow(
-            title: isDriver? 'Driver' : 'Traveller',    //Driver ise driver yazacak üstünde değilse traveller
-            snippet: 'This location is your current location.',
-
+      setState(() {
+        markers.add(
+          Marker(
+            markerId: const MarkerId('currentLocation'),
+            position: currentLocation,
+            icon: isDriver
+                ? BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueBlue)
+                : BitmapDescriptor.defaultMarker,
+            infoWindow: InfoWindow(
+              title: isDriver ? 'Driver' : 'Passenger',
+              //Driver ise driver yazacak üstünde değilse traveller
+              snippet: 'This location is your current location.',
+            ),
           ),
-        ),
-      );
-    });
+        );
+      });
 
-    await _goToLocation(currentLocation);    // Haritada kamera kullanıcının konumuna gider ve gösterir.
-
-
+      await _goToLocation(
+          currentLocation); // Haritada kamera kullanıcının konumuna gider ve gösterir.
+    } catch (e) {
+      print('Driver marker update failed: $e');
+    }
   }
-
-
-
 
   void _addSampleMarkers() {
     setState(() {
@@ -113,7 +121,6 @@ class _DirectionScreenState extends State<DirectionScreen> {
   }
 
   Future<void> _getCurrentLocation() async {
-
     Position position = await currentPosition();
     LatLng currentLocation = LatLng(position.latitude, position.longitude);
 
@@ -135,7 +142,6 @@ class _DirectionScreenState extends State<DirectionScreen> {
       );
     });
     await _goToLocation(currentLocation);
-
   }
 
   Future<void> _saveLocationToFireStore(LatLng location) async {
@@ -275,27 +281,59 @@ class _DirectionScreenState extends State<DirectionScreen> {
         title: const Text('Go to school together'),
         backgroundColor: Colors.orange,
       ),
-      body: GoogleMap(
-        mapType: MapType.normal,
-        initialCameraPosition: _kInitialPosition,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-          mapController = controller;
-        },
-        markers: markers,
-        myLocationEnabled: true,
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+      body: Stack(
         children: [
-          FloatingActionButton(
-            onPressed: _getCurrentLocation,
-            backgroundColor: Colors.white,
-            child: const Icon(Icons.my_location),
+          GoogleMap(
+            mapType: MapType.normal,
+            initialCameraPosition: _kInitialPosition,
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+              mapController = controller;
+            },
+            markers: markers,
+            myLocationEnabled: true,
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: Column(
+              children: [
+                FloatingActionButton(
+                  onPressed: () {
+                    setState(() {
+                      isDriver = true;
+                    });
+                  },
+                  backgroundColor: isDriver ? Colors.blue : Colors.grey,
+                  child: const Icon(Icons.directions_car),
+                ),
+                const SizedBox(height: 10),
+                FloatingActionButton(
+                  onPressed: () {
+                    setState(() {
+                      isDriver = false;
+                    });
+                  },
+                  backgroundColor: !isDriver ? Colors.red : Colors.grey,
+                  child: const Icon(Icons.person),
+                ),
+              ],
+            ),
           ),
         ],
       ),
-    );
+      floatingActionButton: FloatingActionButton(
+        onPressed: _driverMarkerColorChanging,
+        backgroundColor: Colors.white,
+        child: const Icon(Icons.my_location),
+      ),
+    ); 
+    // floatingActionButton: Column(
+    //   mainAxisAlignment: MainAxisAlignment.end,
+    //   children: [
+    //     FloatingActionButton(
+    //       onPressed: _getCurrentLocation,
+    //       backgroundColor: Colors.white,
+    //       child: const Icon(Icons.my_location),
   }
 }
-
