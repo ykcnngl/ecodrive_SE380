@@ -18,8 +18,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   var username;
+  bool isDriver = false; // Driver mı Passenger mı bunu kontrol edecek
+  // Direction screnndekinin bundan farkı o direk ilk değer atıyor init state ile çalışma gibi
 
   @override
   void initState() {
@@ -38,14 +39,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void signout() {
     FirebaseAuth.instance.signOut();
-    if(context.mounted){
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) {
-          return const Welcomepage();
-        }));
+    if (context.mounted) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        return const Welcomepage();
+      }));
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -82,27 +81,55 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 40),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 150),
-                  backgroundColor: Colors.lightGreen),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return const DirectionScreen();
-                    },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDriver ? Colors.blue : Colors.grey,
                   ),
-                );
-              },
-              child: const Text(
-                "Direction Screen",
-                style: TextStyle(fontSize: 24, color: Colors.brown),
-              ),
+                  onPressed: () {
+                    setState(() {
+                      isDriver = true;
+                    });
+                  },
+                  child: const Text('Driver'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDriver ? Colors.grey : Colors.red,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      isDriver = false;
+                    });
+                  },
+                  child: const Text('Passenger'),
+                ),
+                ],
             ),
-          ],
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(200, 150),
+                      backgroundColor: Colors.lightGreen),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return DirectionScreen( isDriver: isDriver );
+                        },
+                      ),
+                    );
+                  },
+                  child: const Text("Direction Screen",
+                    style: TextStyle(fontSize: 24, color: Colors.brown),
+                  ),
+                ),
+              ],
+            ),
+
         ),
-      ),
+
       drawer: Drawer(
         child: ListView(
           children: [
@@ -167,4 +194,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-//updated version
+
