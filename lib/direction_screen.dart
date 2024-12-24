@@ -7,7 +7,7 @@ import 'package:ecodrive/globals.dart' as globals;
 import '../globals.dart';
 
 class DirectionScreen extends StatefulWidget {
-  const DirectionScreen({super.key});
+  const DirectionScreen({super.key, required bool isDriver});
 
   @override
   State<DirectionScreen> createState() => _DirectionScreenState();
@@ -35,40 +35,40 @@ class _DirectionScreenState extends State<DirectionScreen> {
     _listenToFirestoreLocations();
   }
 
-  Future<void> _driverQuestion() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      // Eğer kullanıcı seçim yapmazsa ilerleyemeyecek
-
-      builder: (context) => AlertDialog(
-        title: const Text('Are you a driver?'),
-        content: const Text('Please select your role.'),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await _driverMarkerColorChanging(
-                    isDriver:
-                        true); //Navigator dışarı taşınarak çözüldü
-              } catch (e) {
-                print('Error in setting driver marker: $e');
-              }
-            },
-            child: const Text('Yes'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(
-                  context); // Hiçbir değişiklik yapmadık böylece kırmızı olarak kalacak marker
-            },
-            child: const Text('No'),
-          ),
-        ],
-      ),
-    );
-  }
+  // Future<void> _driverQuestion() async {
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     Eğer kullanıcı seçim yapmazsa ilerleyemeyecek
+  //
+  // builder: (context) => AlertDialog(
+  //   title: const Text('Are you a driver?'),
+  //   content: const Text('Please select your role.'),
+  //   actions: [
+  //     TextButton(
+  //       onPressed: () async {
+  //         Navigator.pop(context);
+  //         try {
+  //           await _driverMarkerColorChanging(
+  //               isDriver:
+  //                   true); //BURDA ASENKRON YAPINCA SORUN OLUYOR UYGULAMA BAZEN HATA VERİYOR    DÜZELDİ
+  //         } catch (e) {
+  //           print('Error in setting driver marker: $e');
+  //         }
+  //       },
+  //       child: const Text('Yes'),
+  //     ),
+  //     TextButton(
+  //       onPressed: () {
+  //         Navigator.pop(
+  //             context); // Hiçbir değişiklik yapmadık böylece kırmızı olarak kalacak marker
+  //       },
+  //       child: const Text('No'),
+  //     ),
+  //   ],
+  // ),
+  // );
+  // }
 
   Future<void> _driverMarkerColorChanging({bool isDriver = true}) async {
     try {
@@ -84,19 +84,17 @@ class _DirectionScreenState extends State<DirectionScreen> {
             position: currentLocation,
             icon: isDriver
                 ? BitmapDescriptor.defaultMarkerWithHue(
-                    BitmapDescriptor.hueBlue)
+                BitmapDescriptor.hueYellow)
                 : BitmapDescriptor.defaultMarker,
             infoWindow: InfoWindow(
-              title: isDriver ? 'Driver' : 'Passenger',
-              //Driver ise driver yazacak üstünde değilse traveller
+              title: isDriver ? 'Driver' : 'Passenger', //Driver ise driver yazacak üstünde değilse passenger
               snippet: 'This location is your current location.',
             ),
           ),
         );
       });
 
-      await _goToLocation(
-          currentLocation); // Haritada kamera kullanıcının konumuna gider ve gösterir.
+      await _goToLocation(currentLocation); // Haritada kamera kullanıcının konumuna gider ve gösterir.
     } catch (e) {
       print('Driver marker update failed: $e');
     }
@@ -120,29 +118,29 @@ class _DirectionScreenState extends State<DirectionScreen> {
     });
   }
 
-  Future<void> _getCurrentLocation() async {
-    Position position = await currentPosition();
-    LatLng currentLocation = LatLng(position.latitude, position.longitude);
-
-    await _saveLocationToFireStore(currentLocation);
-
-    setState(() {
-      markers.add(
-        Marker(
-          markerId: const MarkerId('currentLocation'),
-          position: currentLocation,
-          infoWindow: InfoWindow(
-            title: currentEkoId,
-            snippet: 'Click for options.',
-            onTap: () {
-              _showInfoDialog('Current Location');
-            },
-          ),
-        ),
-      );
-    });
-    await _goToLocation(currentLocation);
-  }
+  // Future<void> _getCurrentLocation() async {
+  //   Position position = await currentPosition();
+  //   LatLng currentLocation = LatLng(position.latitude, position.longitude);
+  //
+  //   await _saveLocationToFireStore(currentLocation);
+  //
+  //   setState(() {
+  //     markers.add(
+  //       Marker(
+  //         markerId: const MarkerId('currentLocation'),
+  //         position: currentLocation,
+  //         infoWindow: InfoWindow(
+  //           title: currentEkoId,
+  //           snippet: 'Click for options.',
+  //           onTap: () {
+  //             _showInfoDialog('Current Location');
+  //           },
+  //         ),
+  //       ),
+  //     );
+  //   });
+  //   await _goToLocation(currentLocation);
+  // }
 
   Future<void> _saveLocationToFireStore(LatLng location) async {
     try {
@@ -277,57 +275,72 @@ class _DirectionScreenState extends State<DirectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Go to school together'),
-        backgroundColor: Colors.orange,
-      ),
-      body: Stack(
-        children: [
-          GoogleMap(
-            mapType: MapType.normal,
-            initialCameraPosition: _kInitialPosition,
-            onMapCreated: (GoogleMapController controller) {
-              _controller.complete(controller);
-              mapController = controller;
-            },
-            markers: markers,
-            myLocationEnabled: true,
-          ),
-          Positioned(
-            top: 10,
-            right: 10,
-            child: Column(
-              children: [
-                FloatingActionButton(
-                  onPressed: () {
-                    setState(() {
-                      isDriver = true;
-                    });
-                  },
-                  backgroundColor: isDriver ? Colors.blue : Colors.grey,
-                  child: const Icon(Icons.directions_car),
-                ),
-                const SizedBox(height: 10),
-                FloatingActionButton(
-                  onPressed: () {
-                    setState(() {
-                      isDriver = false;
-                    });
-                  },
-                  backgroundColor: !isDriver ? Colors.red : Colors.grey,
-                  child: const Icon(Icons.person),
-                ),
-              ],
+        appBar: AppBar(
+          title: const Text('Go to school together'),
+          backgroundColor: Colors.orange,
+        ),
+        body: Stack(
+          children: [
+            GoogleMap(
+              mapType: MapType.normal,
+              initialCameraPosition: _kInitialPosition,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+                mapController = controller;
+              },
+              markers: markers,
+              myLocationEnabled: true,
             ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: Column(
+                children: [
+                  FloatingActionButton(
+                    heroTag: null,            // ********************** heroTag added and fixed(multiple floating action button issue due hero) 
+                    onPressed: () {
+                      setState(() {
+                        isDriver = true;
+                      });
+                    },
+                    backgroundColor: isDriver ? Colors.yellow : Colors.grey,
+                    child: const Icon(Icons.directions_car),
+                  ),
+                  const SizedBox(height: 10),
+                  FloatingActionButton(
+                    heroTag: null,              // ********************** heroTag added and fixed(multiple floating action button issue due hero) 
+                    onPressed: () {
+                      setState(() {
+                        isDriver = false;
+                      });
+                    },
+                    backgroundColor: !isDriver ? Colors.red : Colors.grey,
+                    child: const Icon(Icons.person),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        floatingActionButton: Padding(
+          padding:const EdgeInsets.only(left: 16, bottom: 16),       // kenarlardan boşluk koyduk ekrandan taşamasın diye
+          child: Align(
+              alignment: Alignment.bottomLeft,
+              child: FloatingActionButton(
+                onPressed: _driverMarkerColorChanging,
+                backgroundColor: Colors.white,
+                child: const Icon(Icons.my_location),
+              )
+
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _driverMarkerColorChanging,
-        backgroundColor: Colors.white,
-        child: const Icon(Icons.my_location),
-      ),
-    ); 
+        )
+
+
+    );
+
+
+
     // floatingActionButton: Column(
     //   mainAxisAlignment: MainAxisAlignment.end,
     //   children: [
@@ -335,5 +348,6 @@ class _DirectionScreenState extends State<DirectionScreen> {
     //       onPressed: _getCurrentLocation,
     //       backgroundColor: Colors.white,
     //       child: const Icon(Icons.my_location),
+
   }
 }
