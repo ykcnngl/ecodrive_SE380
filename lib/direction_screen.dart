@@ -7,7 +7,9 @@ import 'package:ecodrive/globals.dart' as globals;
 import '../globals.dart';
 
 class DirectionScreen extends StatefulWidget {
-  const DirectionScreen({super.key, required bool isDriver});
+  const DirectionScreen({super.key, required this.isDriver});
+
+  final bool isDriver;    // isDriverı myhomepage kısmında tanımlayıp burda kullanıyoruz
 
   @override
   State<DirectionScreen> createState() => _DirectionScreenState();
@@ -17,7 +19,7 @@ class _DirectionScreenState extends State<DirectionScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   Set<Marker> markers = {};
   late GoogleMapController mapController;
-  bool isDriver = true; // başlangıçta driver olarak seçili olacak ve istediğimizde değişmek için kaydırmalı buton koyacağız
+  late bool isDriver; // ana ekranda seçtik o yüzden burası late artık ekran içinde dğişim olursa kullanılacak
 
   static const CameraPosition _kInitialPosition = CameraPosition(
     target: LatLng(38.397471597337535, 27.070379359995695),
@@ -31,8 +33,13 @@ class _DirectionScreenState extends State<DirectionScreen> {
     // WidgetsBinding.instance.addPostFrameCallback((_) {       // bunu ana ekrana koymaya çalışıcaz
     //   _driverQuestion();
     // });
+
+    isDriver = widget.isDriver; // ANA EKRANDA SESÇİLENİ BURADA BAŞLATMAK İÇİN KULLANDIK
     _addSampleMarkers(); //Add sample marker
     _listenToFirestoreLocations();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _driverMarkerColorChanging(isDriver:isDriver);          // buraya aldık çünkü haritaya girince marker rengi hemen güncellemeli
+    });
   }
 
   // Future<void> _driverQuestion() async {
@@ -87,7 +94,7 @@ class _DirectionScreenState extends State<DirectionScreen> {
                 BitmapDescriptor.hueYellow)
                 : BitmapDescriptor.defaultMarker,
             infoWindow: InfoWindow(
-              title: isDriver ? 'Driver' : 'Passenger', //Driver ise driver yazacak üstünde değilse passenger
+              title: isDriver ? 'Driver' : 'Passenger',
               snippet: 'This location is your current location.',
             ),
           ),
@@ -99,6 +106,32 @@ class _DirectionScreenState extends State<DirectionScreen> {
       print('Driver marker update failed: $e');
     }
   }
+
+  void _updateMarkerColor() async{
+    Position position = await currentPosition();
+    LatLng currentLocation = LatLng(position.latitude, position.longitude);
+
+    Marker updatedMarker = Marker(
+      markerId: const MarkerId('currentLocation'),
+      position: currentLocation,
+      icon: isDriver
+          ? BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueYellow)
+          : BitmapDescriptor.defaultMarker,
+      infoWindow: InfoWindow(
+        title: isDriver ? 'Driver' : 'Passenger',
+        snippet: 'This location is your current location.',
+      ),
+    );
+
+    setState(() {
+      markers.removeWhere((marker) => marker.markerId.value == 'currentLocation' ); //Eski marker silindi bu sayaede markerlar üst üste oluşmayacak
+      markers.add(updatedMarker);      // yenisi eklenecek
+    });
+    await _goToLocation(currentLocation);   // konumu gösterecek sonra
+  }
+
+
 
   void _addSampleMarkers() {
     setState(() {
@@ -297,22 +330,24 @@ class _DirectionScreenState extends State<DirectionScreen> {
               child: Column(
                 children: [
                   FloatingActionButton(
-                    heroTag: null,            // ********************** heroTag added and fixed(multiple floating action button issue due hero) 
+                    heroTag: "driverButton",  // ********************** heroTag added and fixed(multiple floating action button issue due hero)
                     onPressed: () {
                       setState(() {
                         isDriver = true;
                       });
+                      _updateMarkerColor();
                     },
                     backgroundColor: isDriver ? Colors.yellow : Colors.grey,
                     child: const Icon(Icons.directions_car),
                   ),
                   const SizedBox(height: 10),
                   FloatingActionButton(
-                    heroTag: null,              // ********************** heroTag added and fixed(multiple floating action button issue due hero) 
+                    heroTag: "passengerButton",   // ********************** heroTag added and fixed(multiple floating action button issue due hero)
                     onPressed: () {
                       setState(() {
                         isDriver = false;
                       });
+                      _updateMarkerColor();
                     },
                     backgroundColor: !isDriver ? Colors.red : Colors.grey,
                     child: const Icon(Icons.person),
