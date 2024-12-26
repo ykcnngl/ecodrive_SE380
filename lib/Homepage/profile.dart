@@ -1,49 +1,83 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecodrive/Homepage/Appointment.dart';
 import 'package:ecodrive/Homepage/Messages.dart';
-import 'package:flutter/material.dart';
-
+import 'package:ecodrive/globals.dart' as globals;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'Appointment.dart';
+class Profile extends StatefulWidget {
+  const Profile({super.key});
 
+  @override
+  State<Profile> createState() => _ProfileState();
+}
 
-class Profile extends StatelessWidget {
-  const Profile({
-    super.key,
-  });
-  Widget itemProfile(String title, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.grey,
-            offset: Offset(0, 2),
-            blurRadius: 6,
+class _ProfileState extends State<Profile> {
+  String name = " ";
+  String surname = " ";
+  String birthday = " ";
+  String ekoid = globals.currentEkoId;
+  String password = " ";
+
+  @override
+  void initState() {
+    super.initState();
+    _profileInfo();
+  }
+
+  void _profileInfo() {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(ekoid)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        setState(() {
+          final data = snapshot.data();
+          name = data?['name'] ?? "";
+          surname = data?['surname'] ?? "";
+          birthday = data?['birthday'] ?? "";
+          ekoid = data?['ekoid'] ?? "";
+          password = data?['password'] ?? "";
+        });
+      }
+    });
+  }
+
+  void showEditDialog(String field, String currentValue) {
+    final TextEditingController controller = TextEditingController(text: currentValue);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit $field'),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: 'New $field',
+              border: const OutlineInputBorder(),
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.orange),
-          const SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              Text(
-                value,
-                style: const TextStyle(fontSize: 14),
-              ),
-            ],
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(ekoid)
+                    .update({field.toLowerCase(): controller.text});
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -61,24 +95,19 @@ class Profile extends StatelessWidget {
             const SizedBox(height: 40),
             const CircleAvatar(
               radius: 70,
-              child: Icon(Icons.person),
+              child: Icon(Icons.person, size: 70),
             ),
             const SizedBox(height: 20),
-            itemProfile('Name:', 'Elif Göksu Sümer', CupertinoIcons.person),
+            itemProfile('Name:', name, CupertinoIcons.person, 'name', showSettings: false),
             const SizedBox(height: 20),
-            itemProfile('EcoID:', '20210601053', CupertinoIcons.creditcard),
+            itemProfile('Surname:', surname, CupertinoIcons.person_solid, 'surname', showSettings: false),
             const SizedBox(height: 20),
-            itemProfile('Phone Number:', '05535002572', CupertinoIcons.phone),
+            itemProfile('Birthday:', birthday, CupertinoIcons.calendar, 'birthday', showSettings: false),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Edit Profile'),
-            ),
+            itemProfile('EcoID:', ekoid, CupertinoIcons.creditcard, 'ekoid', showSettings: false),
+            const SizedBox(height: 20),
+            itemProfile('Password:', password, CupertinoIcons.padlock_solid, 'password'),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -92,24 +121,70 @@ class Profile extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.message),
             label: "Messages",
-          )
+          ),
         ],
-        onTap: (i) {
-          if (i == 0) {
+        onTap: (int index) {
+          if (index == 0) {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => const Appointment(),
               ),
             );
-          }
-          if (i == 1) {
+          } else if (index == 1) {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) =>  Messages(),
+                builder: (context) => Messages(),
               ),
             );
           }
         },
+      ),
+    );
+  }
+
+  Widget itemProfile(
+      String title,
+      String value,
+      IconData icon,
+      String fieldKey, {
+        bool showSettings = true,
+      }) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.orange),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    value,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            if (showSettings)
+              IconButton(
+                icon: const Icon(Icons.settings, color: Colors.grey),
+                onPressed: () => showEditDialog(fieldKey, value),
+              ),
+          ],
+        ),
       ),
     );
   }
