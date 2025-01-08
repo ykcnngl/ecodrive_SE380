@@ -6,26 +6,28 @@ import 'mytextfield.dart';
 import 'package:ecodrive/globals.dart' as globals;
 
 class Signup extends StatelessWidget {
-  final EkoIdController = TextEditingController();
+  final EkoIdController = TextEditingController();            // controllers for the text fielders
   final nameController = TextEditingController();
   final surnameController = TextEditingController();
   final passwordController = TextEditingController();
   final birthdayController = TextEditingController();
 
+
   Signup({super.key});
 
   void SignupUser(BuildContext context) async {
-    final ekoid = EkoIdController.text.trim();
+    final ekoid = EkoIdController.text.trim();              // Delete the spaces between the words
     final name = nameController.text.trim();
     final surname = surnameController.text.trim();
     final password = passwordController.text.trim();
     final birthday = birthdayController.text.trim();
 
+
     if (ekoid.isEmpty ||
-        password.isEmpty ||
+        password.isEmpty ||                    // Checking empty or not
         birthday.isEmpty ||
         name.isEmpty ||
-        surname.isEmpty) {
+        surname.isEmpty ) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -43,12 +45,12 @@ class Signup extends StatelessWidget {
       );
       return;
     }
-    final DateTime birthDate = DateTime.parse(birthday);
-    final DateTime today = DateTime.now();
-    final int age = today.year -
+    final DateTime birthDate = DateTime.parse(birthday);          // String to date time
+    final DateTime today = DateTime.now();                        // Current Time
+    final int age = today.year -                                  //  Calculate age
         birthDate.year -
         ((today.month < birthDate.month ||
-                (today.month == birthDate.month && today.day < birthDate.day))
+            (today.month == birthDate.month && today.day < birthDate.day))
             ? 1
             : 0);
     if (age < 18) {
@@ -72,7 +74,7 @@ class Signup extends StatelessWidget {
 
     try {
       final userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(ekoid).get();
+      await FirebaseFirestore.instance.collection('users').doc(ekoid).get();
       if (userDoc.exists) {
         if (userDoc['name'] == name &&
             userDoc['surname'] == surname &&
@@ -82,6 +84,7 @@ class Signup extends StatelessWidget {
               .doc(ekoid)
               .update({
             'password': password,
+
           });
 
           globals.currentEkoId = ekoid;
@@ -120,7 +123,7 @@ class Signup extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text("Okey"),
+              child: const Text("Okay"),
             ),
           ],
         ),
@@ -131,23 +134,18 @@ class Signup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.orange[50],
+      ),
       body: Stack(children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 10.0, top: 50),
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ),
-        SingleChildScrollView(                      // we added scroll due to same issue from login page
+        SingleChildScrollView(
+          // we added scroll due to same issue from login page
           child: Center(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 200),
-                Text("Welcome  ",
+                const SizedBox(height: 80),
+                Text("Welcome to ECODRIVE ",
                     style: TextStyle(
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
@@ -173,9 +171,8 @@ class Signup extends StatelessWidget {
                   hintText: "Surname",
                   obscureText: false,
                 ),
-
-                //pasword
                 const SizedBox(height: 10),
+                //pasword
                 myTextfield(
                   controller: passwordController,
                   hintText: "Password",
@@ -193,20 +190,21 @@ class Signup extends StatelessWidget {
                     );
                     if (selectedDate != null) {
                       birthdayController.text =
-                          "${selectedDate.toLocal()}".split(' ')[0];
+                      "${selectedDate.toLocal()}".split(' ')[0];
                     }
                   },
                   child: AbsorbPointer(
                       child: myTextfield(
-                    controller: birthdayController,
-                    hintText: "Birthday",
-                    obscureText: false,
-                  )),
+                        controller: birthdayController,
+                        hintText: "Birthday",
+                        obscureText: false,
+                      )),
                 ),
                 //Login
                 const SizedBox(height: 25),
                 Myloginbutton(
                   onTap: () {
+                    print("button tapped");
                     SignupUser(context);
                   },
                 ),
@@ -218,5 +216,3 @@ class Signup extends StatelessWidget {
     );
   }
 }
-
-
