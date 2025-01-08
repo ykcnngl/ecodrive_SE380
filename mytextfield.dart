@@ -18,7 +18,7 @@ class myTextfield extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: TextField(
         controller: controller,
-        obscureText: obscureText, //hidepassword
+        obscureText: obscureText,        //hidepassword
         decoration: InputDecoration(
           enabledBorder: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.orange),
