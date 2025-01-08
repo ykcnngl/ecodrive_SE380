@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecodrive/Homepage/Appointment.dart';
+import 'package:ecodrive/Homepage/direction_screen.dart';
 import 'package:ecodrive/Opening/Welcomepage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../view/direction_screen.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'help.dart';
+
 import 'messagesScreen.dart';
 import 'profile.dart';
 import 'driverlicence.dart';
@@ -18,22 +21,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final double maxdistance = 4; //kmeter distance
+  final String ekoid = globals.currentEkoId;
+  List<Map<String, dynamic>> nearusers = [];
   var username;
-  bool isDriver = true; // Driver mı Passenger mı bunu kontrol edecek
-  // Direction screnndekinin bundan farkı o direk ilk değer atıyor init state ile çalışma gibi
+  bool isDriver = false; // Check Driver or Passenger initial value is PASSENGER
+
 
   @override
   void initState() {
     super.initState();
-    fetchUserData(); // Firestore verisini çekmek için çağırılır
+    fetchUserData();
+    _nearUsers(); // CALLED FOR FİRESTORE DATAS
   }
 
   void fetchUserData() async {
     String ekoid = globals.currentEkoId;
     final userDoc =
-        await FirebaseFirestore.instance.collection('users').doc(ekoid).get();
+    await FirebaseFirestore.instance.collection('users').doc(ekoid).get();
     setState(() {
-      username = userDoc['name'] ?? "User"; //  "name" alanını  göster
+      username = userDoc['name'] ?? "User"; //  SHOW "name" FİELD
     });
   }
 
@@ -44,6 +51,40 @@ class _MyHomePageState extends State<MyHomePage> {
         return const Welcomepage();
       }));
     }
+  }
+
+  Future<void> _nearUsers() async {
+    final userDocs = await FirebaseFirestore.instance.collection('users').get();
+    Position position = await Geolocator.getCurrentPosition();
+    LatLng currentUserLocation = LatLng(position.latitude, position.longitude);
+
+    List<Map<String, dynamic>> users = [];
+
+    for (var doc in userDocs.docs) {
+      final data = doc.data();
+      final userEkoid = data['ekoid'];
+      if (data['latitude'] != null && data['longitude'] != null && userEkoid!= globals.currentEkoId) {   // CHECKING ME OR NOT
+        double distancemet = Geolocator.distanceBetween(
+          currentUserLocation.latitude,
+          currentUserLocation.longitude,
+          data['latitude'],
+          data['longitude'],
+        );
+        double distancekm = distancemet/1000;   // Distance to km
+        if (distancekm <= maxdistance) {
+          users.add({
+            'ekoid': userEkoid,
+            'name': data['name'] ?? 'Unknown',
+            'latitude': data['latitude'],
+            'longtitude': data['longitude'],
+            'distance': distancekm.toStringAsFixed(2),
+          });
+        }
+      }
+    }
+    setState(() {
+      nearusers = users;
+    });
   }
 
   @override
@@ -68,7 +109,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        //Köşelerden 24 birim boşluk bırakmak için
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -95,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   child: const Text('Driver'),
                 ),
-                const SizedBox(width: 20 ),
+                const SizedBox(width: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDriver ? Colors.grey : Colors.red,
@@ -108,30 +148,50 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Text('Passenger'),
                 ),
                 const SizedBox(width: 20),
-                ],
-            ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(200, 150),
-                      backgroundColor: Colors.lightBlueAccent),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return DirectionScreen( isDriver : isDriver);
-                        },
-                      ),
-                    );
-                  },
-                  child: const Text("Direction Screen",
-                    style: TextStyle(fontSize: 24, color: Colors.brown),
-                  ),
-                ),
               ],
             ),
-
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(200, 150),
+                  backgroundColor: Colors.lightBlueAccent),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return DirectionScreen(isDriver: isDriver);
+                    },
+                  ),
+                );
+              },
+              child: const Text(
+                "Direction Screen",
+                style: TextStyle(fontSize: 24, color: Colors.brown),
+              ),
+            ),
+            SizedBox(height: 20),
+            const Text("Users Close To You"),
+            SizedBox(height: 10),
+            Expanded(                          // if near user is empty we can show a circle for loading
+                child: nearusers.isEmpty      // if near users isn't empty we can list on myhomepage
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                    itemCount: nearusers.length,
+                    itemBuilder: (context, index) {
+                      final users = nearusers[index];
+                      return  Card(
+                        elevation: 4,
+                        margin: EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          leading:  Icon(Icons.person),
+                          title: Text('${users['name']} (${users['ekoid']})'),
+                          subtitle: Text(
+                              'Distance: ${users['distance']} km'),
+                        ),
+                      );
+                    }))
+          ],
         ),
-
+      ),
       drawer: Drawer(
         child: ListView(
           children: [
@@ -176,7 +236,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) {
-                  return const Appointment();
+                  return Appointment();
                 },
               ),
             );
@@ -187,7 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
               MaterialPageRoute(
                 builder: (context) {
                   return MessagesScreen(
-                    currentEkoId : globals.currentEkoId,
+                      currentEkoId : globals.currentEkoId
                   );
                 },
               ),
@@ -198,4 +258,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
