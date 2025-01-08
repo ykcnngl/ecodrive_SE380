@@ -39,7 +39,7 @@ class Login extends StatelessWidget {
     try {
       final userDoc =
           await FirebaseFirestore.instance.collection('users').doc(ekoid).get();
-      if (userDoc.exists && userDoc['password'] == password) {
+      if (userDoc.exists && userDoc['password'] == password) {                   // Checking informations
         globals.currentEkoId = ekoid;
         print("Current EkoID: ${globals.currentEkoId}");
 
