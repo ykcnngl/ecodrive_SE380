@@ -1,6 +1,0 @@
-library globals;
-
-String currentEkoId = "";
-
-
-//
