@@ -50,7 +50,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB_VQ_XbCFuBjg-01UpQuC1GkEbQZ7uNQM',
+    apiKey: 'YOUR API KEY',
     appId: '1:251557373639:android:748ae09754a2f5d9df80e2',
     messagingSenderId: '251557373639',
     projectId: 'ecodrivenew',
@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAvI30nogYsxxZ5jsGNLGeuMdqxCfl4ZGo',
+    apiKey: 'YOUR API KEY',
     appId: '1:251557373639:ios:84905cc609f076f2df80e2',
     messagingSenderId: '251557373639',
     projectId: 'ecodrivenew',
